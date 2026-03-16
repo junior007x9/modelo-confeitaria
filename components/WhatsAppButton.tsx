@@ -1,9 +1,11 @@
 // components/WhatsAppButton.tsx
 import { MessageCircle } from 'lucide-react';
 
-export default function WhatsAppButton() {
-  // Número genérico de exemplo
-  const phone = "5511999999999";
+type WhatsAppButtonProps = {
+  phone: string;
+};
+
+export default function WhatsAppButton({ phone }: WhatsAppButtonProps) {
   const message = "Olá! Gostaria de tirar uma dúvida sobre um pedido.";
   const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
 
