@@ -90,7 +90,6 @@ export default async function CategoriasPage() {
 
                     <button
                       type="submit"
-                      onclick="return confirm('Tem certeza? Isso apagará todos os produtos desta categoria!')"
                       className="w-10 h-10 flex items-center justify-center bg-white text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all border border-gray-200"
                     >
                       <Trash2 size={18} />
