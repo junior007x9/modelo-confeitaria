@@ -18,6 +18,7 @@ interface CartStore {
   items: CartItem[];
   addItem: (product: Product) => void;
   removeItem: (productId: string) => void;
+  clearCart: () => void; // <-- NOVA FUNÇÃO ADICIONADA AQUI
   totalItems: () => number;
   totalPrice: () => number;
 }
@@ -43,6 +44,10 @@ export const useCartStore = create<CartStore>((set, get) => ({
     set((state) => ({
       items: state.items.filter((item) => item.id !== productId),
     }));
+  },
+
+  clearCart: () => { // <-- IMPLEMENTAÇÃO DA FUNÇÃO AQUI
+    set({ items: [] });
   },
 
   totalItems: () => {

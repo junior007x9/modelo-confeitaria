@@ -3,7 +3,7 @@ import { db } from '@/db';
 import { products, categories } from '@/db/schema';
 import { adicionarProduto, removerProduto } from '@/app/actions/produtos';
 import { eq } from 'drizzle-orm';
-import { Trash2, Plus, Store, LayoutGrid, LogOut, Tags } from 'lucide-react';
+import { Trash2, Plus, Store, LayoutGrid, LogOut, Tags, Receipt, Settings, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 import ImageUploader from '@/components/ImageUploader';
 
@@ -24,34 +24,56 @@ export default async function AdminPage() {
   return (
     <main className="min-h-screen bg-gray-50/50 pb-20">
       
-      {/* Cabeçalho Premium com Menu */}
-      <header className="bg-gradient-to-r from-slate-800 to-slate-900 text-white p-6 md:px-12 shadow-lg flex justify-between items-center sticky top-0 z-40">
-        <h1 className="text-2xl font-black flex items-center gap-3">
+      {/* Cabeçalho Premium com Menu Completo */}
+      <header className="bg-gradient-to-r from-slate-800 to-slate-900 text-white p-6 md:px-12 shadow-lg flex flex-col md:flex-row gap-4 justify-between md:items-center sticky top-0 z-40">
+        <h1 className="text-2xl font-black flex items-center gap-3 shrink-0">
           <div className="bg-white/10 p-2 rounded-xl">
             <Store size={28} />
           </div>
           Gestão da Loja
         </h1>
         
-        <div className="flex items-center gap-3">
-
-          {/* Ver Loja */}
+        {/* Menu de Navegação Horizontal */}
+        <div className="flex items-center gap-2 md:gap-3 overflow-x-auto no-scrollbar py-2 w-full md:w-auto">
+          
           <Link
-            href="/"
-            className="hidden sm:flex bg-white/10 text-white hover:bg-white/20 font-bold px-5 py-2.5 rounded-full text-sm transition-all items-center gap-2 border border-white/5"
+            href="/admin/pedidos"
+            className="whitespace-nowrap bg-white/10 text-white hover:bg-white/20 font-bold px-4 py-2.5 rounded-full text-sm transition-all flex items-center gap-2"
           >
-            <LayoutGrid size={18} /> Ver Loja
+            <Receipt size={16} /> Pedidos
           </Link>
 
-          {/* NOVO BOTÃO: Categorias */}
           <Link
             href="/admin/categorias"
-            className="hidden sm:flex bg-white/10 text-white hover:bg-white/20 font-bold px-5 py-2.5 rounded-full text-sm transition-all items-center gap-2 border border-white/5"
+            className="whitespace-nowrap bg-white/10 text-white hover:bg-white/20 font-bold px-4 py-2.5 rounded-full text-sm transition-all flex items-center gap-2"
           >
-            <Tags size={18} /> Categorias
+            <Tags size={16} /> Categorias
+          </Link>
+
+          <Link
+            href="/admin/configuracoes"
+            className="whitespace-nowrap bg-white/10 text-white hover:bg-white/20 font-bold px-4 py-2.5 rounded-full text-sm transition-all flex items-center gap-2"
+          >
+            <Settings size={16} /> Visual
+          </Link>
+
+          <Link
+            href="/admin/fiscal"
+            className="whitespace-nowrap bg-white/10 text-green-300 hover:bg-white/20 font-bold px-4 py-2.5 rounded-full text-sm transition-all flex items-center gap-2 border border-green-400/30"
+          >
+            <ShieldCheck size={16} /> Fiscal
+          </Link>
+
+          {/* Divisor Visual */}
+          <div className="w-px h-6 bg-white/20 mx-1 hidden md:block"></div>
+
+          <Link
+            href="/"
+            className="whitespace-nowrap bg-white text-slate-900 hover:bg-primary hover:text-white font-bold px-5 py-2.5 rounded-full text-sm transition-all shadow-md flex items-center gap-2"
+          >
+            <LayoutGrid size={16} /> Ver Loja
           </Link>
           
-          {/* Logout */}
           <form
             action={async () => {
               'use server';
@@ -65,7 +87,7 @@ export default async function AdminPage() {
               type="submit"
               className="bg-primary hover:bg-primary/80 text-white font-bold px-5 py-2.5 rounded-full text-sm transition-all shadow-md flex items-center gap-2 border border-primary/20"
             >
-              <LogOut size={18} /> Sair
+              <LogOut size={16} /> Sair
             </button>
           </form>
 

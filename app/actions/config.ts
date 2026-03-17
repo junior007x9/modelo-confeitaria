@@ -6,7 +6,6 @@ import { storeSettings } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 
-// Pega as configurações. Se não existir, cria a padrão.
 export async function getSettings() {
   let settings = await db.select().from(storeSettings).where(eq(storeSettings.id, 'default'));
   if (settings.length === 0) {
@@ -16,7 +15,6 @@ export async function getSettings() {
   return settings[0];
 }
 
-// Salva as novas configurações
 export async function updateSettings(formData: FormData) {
   const storeName = formData.get('storeName') as string;
   const address = formData.get('address') as string;
@@ -31,7 +29,22 @@ export async function updateSettings(formData: FormData) {
   if (logoImage) updateData.logoImage = logoImage;
 
   await db.update(storeSettings).set(updateData).where(eq(storeSettings.id, 'default'));
-  
-  // Atualiza o site todo instantaneamente
   revalidatePath('/', 'layout');
+}
+
+// NOVA FUNÇÃO: Salvar Configurações Fiscais
+export async function updateFiscalSettings(formData: FormData) {
+  const cnpj = formData.get('cnpj') as string;
+  const razaoSocial = formData.get('razaoSocial') as string;
+  const inscricaoEstadual = formData.get('inscricaoEstadual') as string;
+  const inscricaoMunicipal = formData.get('inscricaoMunicipal') as string;
+  const ambienteFiscal = formData.get('ambienteFiscal') as string;
+  const senhaCertificado = formData.get('senhaCertificado') as string;
+  const certificadoA1 = formData.get('certificadoA1') as string; // Arquivo pfx
+
+  const updateData: any = { cnpj, razaoSocial, inscricaoEstadual, inscricaoMunicipal, ambienteFiscal, senhaCertificado };
+  if (certificadoA1) updateData.certificadoA1 = certificadoA1;
+
+  await db.update(storeSettings).set(updateData).where(eq(storeSettings.id, 'default'));
+  revalidatePath('/admin/fiscal');
 }

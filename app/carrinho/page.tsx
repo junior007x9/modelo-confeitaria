@@ -3,45 +3,72 @@
 
 import { useCartStore } from '@/store/useCartStore';
 import Link from 'next/link';
-import { ArrowLeft, Trash2, Plus, MapPin, Store, ShoppingBag } from 'lucide-react';
+import { ArrowLeft, Trash2, Plus, MapPin, Store, ShoppingBag, Loader2 } from 'lucide-react';
 import { useState } from 'react';
+import { criarPedido } from '@/app/actions/pedidos';
 
 export default function Carrinho() {
-  const { items, removeItem, addItem, totalPrice } = useCartStore();
+  const { items, removeItem, addItem, totalPrice, clearCart } = useCartStore();
   const [tipoEntrega, setTipoEntrega] = useState<'entrega' | 'retirada'>('entrega');
   const [nome, setNome] = useState('');
   const [endereco, setEndereco] = useState('');
+  const [carregando, setCarregando] = useState(false); // Estado para o botão de loading
 
   const valorItens = totalPrice();
   const taxaEntrega = tipoEntrega === 'entrega' ? 5.00 : 0;
   const valorTotal = valorItens + taxaEntrega;
 
-  const finalizarPedido = () => {
+  const finalizarPedido = async () => {
+    if (!nome.trim()) {
+      alert('Por favor, preencha o seu nome.');
+      return;
+    }
     if (tipoEntrega === 'entrega' && !endereco.trim()) {
       alert('Por favor, preencha o endereço de entrega.');
       return;
     }
     
-    let mensagem = `*Novo Pedido - Nome da Empresa*\n\n`;
-    mensagem += `*Cliente:* ${nome || 'Não informado'}\n`;
-    mensagem += `*Tipo:* ${tipoEntrega === 'entrega' ? 'Delivery 🛵' : 'Retirada na Loja 🏪'}\n\n`;
-    mensagem += `*Itens do Pedido:*\n`;
-    
-    items.forEach(item => {
-      mensagem += `${item.quantity}x ${item.name} - R$ ${(item.price * item.quantity).toFixed(2)}\n`;
-    });
+    setCarregando(true); // Ativa o loading no botão
 
-    mensagem += `\n*Subtotal:* R$ ${valorItens.toFixed(2)}\n`;
-    if (tipoEntrega === 'entrega') mensagem += `*Taxa de Entrega:* R$ ${taxaEntrega.toFixed(2)}\n`;
-    mensagem += `*Total a Pagar:* R$ ${valorTotal.toFixed(2)}\n\n`;
-    
-    if (tipoEntrega === 'entrega') {
-      mensagem += `*Endereço:* ${endereco}`;
+    try {
+      // 1. Salva o pedido no banco de dados
+      const orderId = await criarPedido({ nome, tipoEntrega, endereco, valorTotal }, items);
+      
+      // 2. Monta a mensagem para o WhatsApp com o número do pedido real gerado pelo banco
+      let mensagem = `*Novo Pedido: #${orderId.replace('ped-', '')}*\n\n`;
+      mensagem += `*Cliente:* ${nome || 'Não informado'}\n`;
+      mensagem += `*Tipo:* ${tipoEntrega === 'entrega' ? 'Delivery 🛵' : 'Retirada na Loja 🏪'}\n\n`;
+      mensagem += `*Itens do Pedido:*\n`;
+      
+      items.forEach(item => {
+        mensagem += `${item.quantity}x ${item.name} - R$ ${(item.price * item.quantity).toFixed(2)}\n`;
+      });
+
+      mensagem += `\n*Subtotal:* R$ ${valorItens.toFixed(2)}\n`;
+      if (tipoEntrega === 'entrega') mensagem += `*Taxa de Entrega:* R$ ${taxaEntrega.toFixed(2)}\n`;
+      mensagem += `*Total a Pagar:* R$ ${valorTotal.toFixed(2)}\n\n`;
+      
+      if (tipoEntrega === 'entrega') {
+        mensagem += `*Endereço:* ${endereco}`;
+      }
+
+      // 3. Limpa o carrinho
+      clearCart();
+
+      // 4. Redireciona para o WhatsApp
+      const telefoneDaLoja = "5511999999999"; // Depois podemos puxar isso das settings também
+      const url = `https://wa.me/${telefoneDaLoja}?text=${encodeURIComponent(mensagem)}`;
+      window.open(url, '_blank');
+      
+      // 5. Volta para a página inicial
+      window.location.href = "/";
+      
+    } catch (error) {
+      console.error(error);
+      alert('Erro ao processar o pedido. Por favor, tente novamente ou verifique o terminal do servidor.');
+    } finally {
+      setCarregando(false);
     }
-
-    const telefoneDaLoja = "5511999999999";
-    const url = `https://wa.me/${telefoneDaLoja}?text=${encodeURIComponent(mensagem)}`;
-    window.open(url, '_blank');
   };
 
   if (items.length === 0) {
@@ -186,9 +213,14 @@ export default function Carrinho() {
 
             <button 
               onClick={finalizarPedido}
-              className="w-full bg-gradient-to-r from-primary to-secondary hover:from-secondary hover:to-primary text-white font-black text-lg py-5 rounded-2xl transition-all shadow-xl shadow-primary/30 active:scale-[0.98] flex items-center justify-center gap-2"
+              disabled={carregando}
+              className="w-full bg-gradient-to-r from-primary to-secondary hover:from-secondary hover:to-primary text-white font-black text-lg py-5 rounded-2xl transition-all shadow-xl shadow-primary/30 active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              Finalizar no WhatsApp
+              {carregando ? (
+                <Loader2 className="animate-spin" size={24} />
+              ) : (
+                "Finalizar no WhatsApp"
+              )}
             </button>
           </div>
         </aside>
